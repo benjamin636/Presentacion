@@ -1,0 +1,114 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Presentación UFC - Peleadores Destacados</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        header {
+            background-color: #d32f2f;
+            color: white;
+            text-align: center;
+            padding: 2em;
+        }
+        section {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h2 {
+            color: #d32f2f;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        .fighter {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Ultimate Fighting Championship (UFC)</h1>
+        <p>Los peleadores más icónicos de la historia</p>
+    </header>
+
+    <section id="introduccion">
+        <h2>Introducción a la UFC</h2>
+        <p>La Ultimate Fighting Championship (UFC) es la organización líder en artes marciales mixtas (MMA), conocida por sus emocionantes combates y atletas de élite. Desde su fundación en 1993, ha destacado a algunos de los peleadores más talentosos y carismáticos del mundo.</p>
+        <img src="images/UFC1.jpg" alt="Evento principal de UFC">
+    </section>
+
+    <section id="peleadores">
+        <h2>Peleadores Legendarios</h2>
+        <div class="fighter">
+            <h3>Conor McGregor</h3>
+            <p>Conocido por su carisma y precisión en el octágono, McGregor es el primer campeón simultáneo en dos divisiones de UFC (peso pluma y ligero).</p>
+            <img src="images/UFC2.jpg" alt="Conor McGregor en combate">
+        </div>
+        <div class="fighter">
+            <h3>Khabib Nurmagomedov</h3>
+            <p>Invicto en su carrera profesional, Khabib es conocido por su dominio en la lucha y su récord impecable en el peso ligero.</p>
+            <img src="images/UFC3.jpg" alt="Khabib Nurmagomedov en el octágono">
+        </div>
+    </section>
+
+    <section id="impacto">
+        <h2>Impacto Global de la UFC</h2>
+        <p>La UFC ha transformado el panorama de los deportes de combate, llevando las MMA a una audiencia global y estableciendo estándares para la seguridad y profesionalismo en el deporte.</p>
+        <img src="images/UFC4.jpg" alt="Evento global de UFC">
+    </section>
+</body>
+</html>
